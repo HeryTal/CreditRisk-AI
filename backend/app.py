@@ -17,16 +17,21 @@ CORS(app)
 PREDICTIONS_FILE = os.path.join(BASE_DIR, "predictions_history.json")
 MAX_HISTORY_ITEMS = 500
 
-# Load model and encoders from the same directory as the script
-model = joblib.load(os.path.join(BASE_DIR, "best_decision_tree_model.pkl"))
-le_sex = joblib.load(os.path.join(BASE_DIR, "Sex_label_encoder.pkl"))
-le_housing = joblib.load(os.path.join(BASE_DIR, "Housing_label_encoder.pkl"))
-le_saving = joblib.load(os.path.join(BASE_DIR, "Saving accounts_label_encoder.pkl"))
-le_checking = joblib.load(os.path.join(BASE_DIR, "Checking account_label_encoder.pkl"))
-le_target = joblib.load(os.path.join(BASE_DIR, "target_label_encoder.pkl"))
-
 categorical_cols = ["Sex", "Housing", "Saving accounts", "Checking account"]
 numerical_cols = ["Age", "Job", "Credit amount", "Duration"]
+
+# Model artifacts are loaded lazily so the API can still boot and expose diagnostics.
+model = None
+le_sex = None
+le_housing = None
+le_saving = None
+le_checking = None
+le_target = None
+model_load_error = None
+feature_labels = []
+category_offsets = {}
+feature_count = 0
+bad_class_index = 0
 
 
 def build_feature_metadata():
@@ -49,10 +54,38 @@ def build_feature_metadata():
     return labels, category_offsets, offset
 
 
-feature_labels, category_offsets, feature_count = build_feature_metadata()
+def initialize_model_artifacts():
+    global model, le_sex, le_housing, le_saving, le_checking, le_target
+    global model_load_error, feature_labels, category_offsets, feature_count
+    global bad_class_index
+
+    if model is not None:
+        return True
+    if model_load_error is not None:
+        return False
+
+    try:
+        model = joblib.load(os.path.join(BASE_DIR, "best_decision_tree_model.pkl"))
+        le_sex = joblib.load(os.path.join(BASE_DIR, "Sex_label_encoder.pkl"))
+        le_housing = joblib.load(os.path.join(BASE_DIR, "Housing_label_encoder.pkl"))
+        le_saving = joblib.load(os.path.join(BASE_DIR, "Saving accounts_label_encoder.pkl"))
+        le_checking = joblib.load(os.path.join(BASE_DIR, "Checking account_label_encoder.pkl"))
+        le_target = joblib.load(os.path.join(BASE_DIR, "target_label_encoder.pkl"))
+
+        feature_labels, category_offsets, feature_count = build_feature_metadata()
+
+        bad_class_index = get_model_class_index_for_target("bad")
+        if bad_class_index is None:
+            bad_class_index = 1 if len(model.classes_) > 1 else 0
+        return True
+    except Exception as error:
+        model_load_error = str(error)
+        return False
 
 
 def get_model_class_index_for_encoded(encoded_label):
+    if model is None:
+        return None
     matches = np.where(model.classes_ == encoded_label)[0]
     if matches.size == 0:
         return None
@@ -60,16 +93,13 @@ def get_model_class_index_for_encoded(encoded_label):
 
 
 def get_model_class_index_for_target(target_label):
+    if le_target is None:
+        return None
     try:
         encoded_target = int(le_target.transform([target_label])[0])
     except ValueError:
         return None
     return get_model_class_index_for_encoded(encoded_target)
-
-
-bad_class_index = get_model_class_index_for_target("bad")
-if bad_class_index is None:
-    bad_class_index = 1 if len(model.classes_) > 1 else 0
 
 
 def load_predictions():
@@ -88,8 +118,13 @@ def save_prediction(prediction_data):
     predictions.append(prediction_data)
     predictions = predictions[-MAX_HISTORY_ITEMS:]
 
-    with open(PREDICTIONS_FILE, "w", encoding="utf-8") as file:
-        json.dump(predictions, file, ensure_ascii=False, indent=2)
+    try:
+        with open(PREDICTIONS_FILE, "w", encoding="utf-8") as file:
+            json.dump(predictions, file, ensure_ascii=False, indent=2)
+    except OSError:
+        # Serverless environments can have read-only filesystems.
+        # Prediction remains returned to the caller even if history persistence fails.
+        return
 
 
 def get_next_prediction_id():
@@ -282,6 +317,17 @@ def explain_prediction(x_processed, score_class_index):
 
 @app.route("/predict", methods=["POST"])
 def predict():
+    if not initialize_model_artifacts():
+        return (
+            jsonify(
+                {
+                    "success": False,
+                    "error": f"Model initialization failed: {model_load_error}",
+                }
+            ),
+            503,
+        )
+
     try:
         data = request.get_json(silent=True) or {}
         input_data = prepare_input(data)
@@ -408,15 +454,22 @@ def clear_history():
 
 @app.route("/health", methods=["GET"])
 def health():
-    return jsonify({"status": "healthy"})
+    ready = initialize_model_artifacts()
+    payload = {"status": "healthy" if ready else "degraded", "model_ready": ready}
+    if not ready:
+        payload["model_error"] = model_load_error
+    return jsonify(payload), (200 if ready else 503)
 
 
 @app.route("/", methods=["GET"])
 def index():
+    ready = initialize_model_artifacts()
     return jsonify(
         {
             "service": "CreditRisk AI Backend",
-            "status": "running",
+            "status": "running" if ready else "degraded",
+            "model_ready": ready,
+            "model_error": model_load_error if not ready else None,
             "endpoints": [
                 "/health",
                 "/predict",

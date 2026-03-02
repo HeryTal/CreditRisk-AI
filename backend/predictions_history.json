@@ -213,5 +213,91 @@
         "direction": "decreases_risk"
       }
     ]
+  },
+  {
+    "id": 6,
+    "timestamp": "2026-03-02T18:24:22.402353Z",
+    "input": {
+      "age": "35",
+      "sex": "male",
+      "job": "2",
+      "housing": "own",
+      "saving_accounts": "little",
+      "checking_account": "little",
+      "credit_amount": "5000",
+      "duration": "24"
+    },
+    "prediction": "bad",
+    "probability": 1.0,
+    "risk_score": 1.0,
+    "explanation": [
+      {
+        "feature": "Duration",
+        "rule": "Duration <= 25.50",
+        "value": 24.0,
+        "impact": 0.2571,
+        "signed_impact": 0.2571,
+        "direction": "increases_risk"
+      },
+      {
+        "feature": "Job",
+        "rule": "Job <= 2.50",
+        "value": 2.0,
+        "impact": 0.1468,
+        "signed_impact": 0.1468,
+        "direction": "increases_risk"
+      },
+      {
+        "feature": "Age",
+        "rule": "Age > 29.50",
+        "value": 35.0,
+        "impact": 0.1385,
+        "signed_impact": -0.1385,
+        "direction": "decreases_risk"
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "timestamp": "2026-03-02T18:56:56.824485Z",
+    "input": {
+      "age": 35,
+      "checking_account": "little",
+      "credit_amount": 5000,
+      "duration": 24,
+      "housing": "own",
+      "job": 2,
+      "saving_accounts": "little",
+      "sex": "male"
+    },
+    "prediction": "bad",
+    "probability": 1.0,
+    "risk_score": 1.0,
+    "explanation": [
+      {
+        "feature": "Duration",
+        "rule": "Duration <= 25.50",
+        "value": 24.0,
+        "impact": 0.2571,
+        "signed_impact": 0.2571,
+        "direction": "increases_risk"
+      },
+      {
+        "feature": "Job",
+        "rule": "Job <= 2.50",
+        "value": 2.0,
+        "impact": 0.1468,
+        "signed_impact": 0.1468,
+        "direction": "increases_risk"
+      },
+      {
+        "feature": "Age",
+        "rule": "Age > 29.50",
+        "value": 35.0,
+        "impact": 0.1385,
+        "signed_impact": -0.1385,
+        "direction": "decreases_risk"
+      }
+    ]
   }
 ]
