@@ -8,18 +8,22 @@ import joblib
 import numpy as np
 import pandas as pd
 
+# Get the directory where this script is located
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 app = Flask(__name__)
 CORS(app)
 
-PREDICTIONS_FILE = "predictions_history.json"
+PREDICTIONS_FILE = os.path.join(BASE_DIR, "predictions_history.json")
 MAX_HISTORY_ITEMS = 500
 
-model = joblib.load("best_decision_tree_model.pkl")
-le_sex = joblib.load("Sex_label_encoder.pkl")
-le_housing = joblib.load("Housing_label_encoder.pkl")
-le_saving = joblib.load("Saving accounts_label_encoder.pkl")
-le_checking = joblib.load("Checking account_label_encoder.pkl")
-le_target = joblib.load("target_label_encoder.pkl")
+# Load model and encoders from the same directory as the script
+model = joblib.load(os.path.join(BASE_DIR, "best_decision_tree_model.pkl"))
+le_sex = joblib.load(os.path.join(BASE_DIR, "Sex_label_encoder.pkl"))
+le_housing = joblib.load(os.path.join(BASE_DIR, "Housing_label_encoder.pkl"))
+le_saving = joblib.load(os.path.join(BASE_DIR, "Saving accounts_label_encoder.pkl"))
+le_checking = joblib.load(os.path.join(BASE_DIR, "Checking account_label_encoder.pkl"))
+le_target = joblib.load(os.path.join(BASE_DIR, "target_label_encoder.pkl"))
 
 categorical_cols = ["Sex", "Housing", "Saving accounts", "Checking account"]
 numerical_cols = ["Age", "Job", "Credit amount", "Duration"]

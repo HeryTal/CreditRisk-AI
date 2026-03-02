@@ -84,5 +84,134 @@
         "direction": "decreases_risk"
       }
     ]
+  },
+  {
+    "id": 3,
+    "timestamp": "2026-03-02T16:38:43.890528Z",
+    "input": {
+      "age": "35",
+      "sex": "male",
+      "job": "2",
+      "housing": "own",
+      "saving_accounts": "little",
+      "checking_account": "little",
+      "credit_amount": "5000",
+      "duration": "24"
+    },
+    "prediction": "bad",
+    "probability": 1.0,
+    "risk_score": 1.0,
+    "explanation": [
+      {
+        "feature": "Duration",
+        "rule": "Duration <= 25.50",
+        "value": 24.0,
+        "impact": 0.2571,
+        "signed_impact": 0.2571,
+        "direction": "increases_risk"
+      },
+      {
+        "feature": "Job",
+        "rule": "Job <= 2.50",
+        "value": 2.0,
+        "impact": 0.1468,
+        "signed_impact": 0.1468,
+        "direction": "increases_risk"
+      },
+      {
+        "feature": "Age",
+        "rule": "Age > 29.50",
+        "value": 35.0,
+        "impact": 0.1385,
+        "signed_impact": -0.1385,
+        "direction": "decreases_risk"
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "timestamp": "2026-03-02T16:39:07.190811Z",
+    "input": {
+      "age": "40",
+      "sex": "male",
+      "job": "2",
+      "housing": "own",
+      "saving_accounts": "rich",
+      "checking_account": "rich",
+      "credit_amount": "5000",
+      "duration": "24"
+    },
+    "prediction": "good",
+    "probability": 1.0,
+    "risk_score": 0.0,
+    "explanation": [
+      {
+        "feature": "Checking account=rich",
+        "rule": "Checking account=rich > 0.50",
+        "value": 1.0,
+        "impact": 0.4553,
+        "signed_impact": -0.4553,
+        "direction": "decreases_risk"
+      },
+      {
+        "feature": "Duration",
+        "rule": "Duration > 22.50",
+        "value": 24.0,
+        "impact": 0.0908,
+        "signed_impact": 0.0908,
+        "direction": "increases_risk"
+      },
+      {
+        "feature": "Age",
+        "rule": "Age > 29.50",
+        "value": 40.0,
+        "impact": 0.0778,
+        "signed_impact": -0.0778,
+        "direction": "decreases_risk"
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "timestamp": "2026-03-02T16:44:14.493838Z",
+    "input": {
+      "age": "35",
+      "sex": "male",
+      "job": "2",
+      "housing": "own",
+      "saving_accounts": "little",
+      "checking_account": "little",
+      "credit_amount": "5000",
+      "duration": "24"
+    },
+    "prediction": "bad",
+    "probability": 1.0,
+    "risk_score": 1.0,
+    "explanation": [
+      {
+        "feature": "Duration",
+        "rule": "Duration <= 25.50",
+        "value": 24.0,
+        "impact": 0.2571,
+        "signed_impact": 0.2571,
+        "direction": "increases_risk"
+      },
+      {
+        "feature": "Job",
+        "rule": "Job <= 2.50",
+        "value": 2.0,
+        "impact": 0.1468,
+        "signed_impact": 0.1468,
+        "direction": "increases_risk"
+      },
+      {
+        "feature": "Age",
+        "rule": "Age > 29.50",
+        "value": 35.0,
+        "impact": 0.1385,
+        "signed_impact": -0.1385,
+        "direction": "decreases_risk"
+      }
+    ]
   }
 ]

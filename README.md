@@ -291,7 +291,6 @@ GET /history/{id}
 │   ├── best_decision_tree_model.pkl    # Trained model
 │   ├── * _label_encoder.pkl        # Label encoders for categorical features
 │   ├── predictions_history.json    # Prediction storage
-│   ├── requirements.txt           # Python dependencies
 │   └── test.py                    # Backend tests
 │
 ├── front/
@@ -322,8 +321,8 @@ GET /history/{id}
 │
 ├── analysis_model.ipynb           # Jupyter notebook for model analysis
 ├── fix_model.py                   # Model training/fixing script
-├── test.py                        # Integration tests
 ├── german_credit_data.csv         # Dataset
+├── requirements.txt               # Python dependencies (root level)
 └── README.md                       # This file
 ```
 
