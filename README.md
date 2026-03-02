@@ -18,7 +18,10 @@ A full-stack web application for predicting bank credit risk using machine learn
 - [API Documentation](#api-documentation)
 - [Project Structure](#project-structure)
 - [Model Details](#model-details)
-- [Screenshots](#screenshots)
+- [Deployment](#deployment)
+  - [Frontend on Vercel](#frontend-on-vercel)
+  - [Backend on Render](#backend-on-render)
+- [License](#license)
 
 ---
 
@@ -129,10 +132,10 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 3. Install Python dependencies:
 ```
 bash
-pip install flask flask-cors scikit-learn joblib pandas numpy
+pip install flask flask-cors scikit-learn joblib pandas numpy gunicorn
 ```
 
-4. Start the Flask server:
+4. Start the Flask server locally:
 ```
 bash
 python app.py
@@ -161,14 +164,6 @@ npm run dev
 ```
 
 The frontend will run on `http://localhost:5173`
-
-### Environment Variables (Optional)
-
-Create a `.env` file in the frontend directory:
-```
-env
-VITE_API_URL=http://localhost:5000
-```
 
 ---
 
@@ -204,7 +199,7 @@ cd front/BankPrediction && npm run dev
 
 ## API Documentation
 
-### Base URL
+### Base URL (Local)
 ```
 http://localhost:5000
 ```
@@ -213,9 +208,9 @@ http://localhost:5000
 
 #### 1. Health Check
 ```
-http
 GET /health
 ```
+
 **Response:**
 ```
 json
@@ -226,7 +221,6 @@ json
 
 #### 2. Make a Prediction
 ```
-http
 POST /predict
 ```
 
@@ -246,7 +240,8 @@ json
 ```
 
 **Response:**
-```json
+```
+json
 {
   "success": true,
   "prediction": "good",
@@ -267,59 +262,21 @@ json
 
 #### 3. Get Prediction History
 ```
-http
 GET /history
-```
-
-**Response:**
-```
-json
-{
-  "success": true,
-  "predictions": [...],
-  "total": 100
-}
 ```
 
 #### 4. Get Statistics
 ```
-http
 GET /history/stats
-```
-
-**Response:**
-```
-json
-{
-  "success": true,
-  "stats": {
-    "total": 100,
-    "good": 70,
-    "bad": 30,
-    "good_percentage": 70.0,
-    "average_confidence": 82.5
-  }
-}
 ```
 
 #### 5. Clear History
 ```
-http
 DELETE /history/clear
-```
-
-**Response:**
-```
-json
-{
-  "success": true,
-  "message": "Historique efface"
-}
 ```
 
 #### 6. Get Single Prediction
 ```
-http
 GET /history/{id}
 ```
 
@@ -334,6 +291,7 @@ GET /history/{id}
 │   ├── best_decision_tree_model.pkl    # Trained model
 │   ├── * _label_encoder.pkl        # Label encoders for categorical features
 │   ├── predictions_history.json    # Prediction storage
+│   ├── requirements.txt           # Python dependencies
 │   └── test.py                    # Backend tests
 │
 ├── front/
@@ -395,20 +353,185 @@ GET /history/{id}
 - **good**: Credit approved
 - **bad**: Credit rejected
 
-### Model Performance
-The Decision Tree model is trained and serialized using joblib. Model performance metrics are available in the `analysis_model.ipynb` notebook.
+---
+
+## Deployment
+
+### Frontend on Vercel
+
+#### Method 1: Deploy with Vercel CLI
+
+1. Install Vercel CLI:
+```
+bash
+npm install -g vercel
+```
+
+2. Navigate to the frontend directory:
+```
+bash
+cd front/BankPrediction
+```
+
+3. Login to Vercel:
+```
+bash
+vercel login
+```
+
+4. Deploy:
+```
+bash
+vercel
+```
+
+5. Set up environment variable for the API URL:
+```
+bash
+vercel env add VITE_API_URL
+```
+Enter your Render backend URL (e.g., `https://your-backend.onrender.com`)
+
+#### Method 2: Deploy with GitHub
+
+1. Push your code to a GitHub repository
+
+2. Go to [vercel.com](https://vercel.com) and sign up
+
+3. Click "New Project" and import your GitHub repository
+
+4. Configure the project:
+   - Framework Preset: `Vite`
+   - Build Command: `npm run build`
+   - Output Directory: `dist`
+
+5. Add environment variable:
+   - Name: `VITE_API_URL`
+   - Value: Your Render backend URL (e.g., `https://bank-prediction-api.onrender.com`)
+
+6. Click "Deploy"
+
+#### Update Frontend for Production
+
+Make sure to update the API URL in `front/BankPrediction/src/App.jsx`:
+
+```
+javascript
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+```
 
 ---
 
-## Screenshots
+### Backend on Render
 
-The application features a modern dark-themed dashboard with:
+#### Method 1: Deploy with GitHub
 
-- **Stats Cards**: Quick metrics overview
-- **Charts**: Interactive line/bar charts for data visualization
-- **Prediction Form**: Clean form for entering credit data
-- **Result Display**: Clear prediction with probability and explanation
-- **History**: Searchable prediction history
+1. Create a `requirements.txt` file in the backend directory:
+```
+text
+flask
+flask-cors
+scikit-learn
+joblib
+pandas
+numpy
+gunicorn
+```
+
+2. Create a `render.yaml` file in the backend directory (optional, for automatic configuration):
+```
+yaml
+services:
+  - type: web
+    name: bank-prediction-api
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+```
+
+3. Push your code to a GitHub repository
+
+4. Go to [render.com](https://render.com) and sign up
+
+5. Click "New" and select "Web Service"
+
+6. Connect your GitHub repository
+
+7. Configure the service:
+   - Name: `bank-prediction-api`
+   - Region: Choose closest to you
+   - Branch: `main`
+   - Runtime: `Python`
+   - Build Command: `pip install -r requirements.txt`
+   - Start Command: `gunicorn app:app`
+
+8. Click "Deploy"
+
+#### Method 2: Deploy with Render CLI
+
+1. Install Render CLI:
+```bash
+pip install render
+```
+
+2. Login:
+```
+bash
+render login
+```
+
+3. Navigate to backend directory:
+```
+bash
+cd backend
+```
+
+4. Create the service:
+```
+bash
+render create service --name bank-prediction-api --type web --buildCommand "pip install -r requirements.txt" --startCommand "gunicorn app:app"
+```
+
+---
+
+### Configuration for Cross-Origin (CORS)
+
+The backend is already configured with CORS support in `backend/app.py`:
+
+```python
+from flask_cors import CORS
+app = Flask(__name__)
+CORS(app)
+```
+
+For production, you may want to restrict CORS to only your Vercel domain:
+
+```
+python
+CORS(app, origins=["https://your-vercel-project.vercel.app"])
+```
+
+---
+
+### Environment Variables Summary
+
+**Frontend (Vercel):**
+| Variable | Value |
+|----------|-------|
+| VITE_API_URL | `https://your-backend.onrender.com` |
+
+**Backend (Render):**
+No special environment variables required (all config is in the code).
+
+---
+
+### Final URLs
+
+After deployment:
+- **Frontend**: `https://your-project.vercel.app`
+- **Backend**: `https://bank-prediction-api.onrender.com`
+
+Make sure to update the `VITE_API_URL` in Vercel to point to your Render backend URL.
 
 ---
 
