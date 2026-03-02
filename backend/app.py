@@ -411,5 +411,23 @@ def health():
     return jsonify({"status": "healthy"})
 
 
+@app.route("/", methods=["GET"])
+def index():
+    return jsonify(
+        {
+            "service": "CreditRisk AI Backend",
+            "status": "running",
+            "endpoints": [
+                "/health",
+                "/predict",
+                "/history",
+                "/history/stats",
+                "/history/<id>",
+                "/history/clear",
+            ],
+        }
+    )
+
+
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
