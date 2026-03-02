@@ -1,5 +1,6 @@
-ï»¿import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import './App.css'
+import { API_URL } from './config/api'
 
 import {
   Header,
@@ -14,8 +15,6 @@ import {
   History,
 } from './components'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
-
 const INITIAL_FORM_DATA = {
   age: '35',
   sex: 'male',
@@ -28,11 +27,11 @@ const INITIAL_FORM_DATA = {
 }
 
 const METRIC_TITLES = {
-  evolution: 'Ã‰volution des crÃ©dits',
-  solvability: 'Taux de solvabilitÃ©',
-  amount: 'Montants moyens (kâ‚¬)',
-  duration: 'DurÃ©es moyennes (mois)',
-  accuracy: 'PrÃ©cision du modÃ¨le (%)',
+  evolution: 'Évolution des crédits',
+  solvability: 'Taux de solvabilité',
+  amount: 'Montants moyens (k€)',
+  duration: 'Durées moyennes (mois)',
+  accuracy: 'Précision du modèle (%)',
 }
 
 function App() {
@@ -81,13 +80,13 @@ function App() {
     const duration = Number(payload.duration)
 
     if (age < 18 || age > 100) {
-      return "L'Ã¢ge doit Ãªtre compris entre 18 et 100 ans"
+      return "L'âge doit être compris entre 18 et 100 ans"
     }
     if (creditAmount <= 0) {
-      return 'Le montant du crÃ©dit doit Ãªtre supÃ©rieur Ã  0'
+      return 'Le montant du crédit doit être supérieur à 0'
     }
     if (duration < 1 || duration > 72) {
-      return 'La durÃ©e doit Ãªtre comprise entre 1 et 72 mois'
+      return 'La durée doit être comprise entre 1 et 72 mois'
     }
     return ''
   }
@@ -228,7 +227,7 @@ function App() {
                   onClick={() => handleRiskFilterChange('good')}
                 >
                   <div className="mr-2 h-3 w-3 rounded-full bg-green-500" />
-                  <span className="text-xs text-gray-400">AccordÃ©s</span>
+                  <span className="text-xs text-gray-400">Accordés</span>
                 </button>
                 <button
                   type="button"
@@ -236,7 +235,7 @@ function App() {
                   onClick={() => handleRiskFilterChange('bad')}
                 >
                   <div className="mr-2 h-3 w-3 rounded-full bg-red-500" />
-                  <span className="text-xs text-gray-400">RefusÃ©s</span>
+                  <span className="text-xs text-gray-400">Refusés</span>
                 </button>
               </div>
             </div>

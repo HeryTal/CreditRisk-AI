@@ -459,6 +459,10 @@ def health():
     if not ready:
         payload["model_error"] = model_load_error
     return jsonify(payload), (200 if ready else 503)
+            "model": os.path.exists(os.path.join(BASE_DIR, "best_decision_tree_model.pkl")),
+            "le_sex": os.path.exists(os.path.join(BASE_DIR, "Sex_label_encoder.pkl")),
+            "le_housing": os.path.exists(os.path.join(BASE_DIR, "Housing_label_encoder.pkl")),
+        "model_ready": ready,
 
 
 @app.route("/", methods=["GET"])
