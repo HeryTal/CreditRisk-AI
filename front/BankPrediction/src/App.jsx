@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+Ôªøimport { useEffect, useState, useCallback, memo } from 'react'
 import './App.css'
 import { API_URL } from './config/api'
 
@@ -27,12 +27,23 @@ const INITIAL_FORM_DATA = {
 }
 
 const METRIC_TITLES = {
-  evolution: '…volution des crÈdits',
-  solvability: 'Taux de solvabilitÈ',
-  amount: 'Montants moyens (kÄ)',
-  duration: 'DurÈes moyennes (mois)',
-  accuracy: 'PrÈcision du modËle (%)',
+  evolution: '√âvolution des cr√©dits',
+  solvability: 'Taux de solvabilit√©',
+  amount: 'Montants moyens (k‚Ç¨)',
+  duration: 'Dur√©es moyennes (mois)',
+  accuracy: 'Pr√©cision du mod√®le (%)',
 }
+
+// Composants memo√Øs√©s pour √©viter les re-rendus inutiles
+const MemoizedStatsCards = memo(StatsCards)
+const MemoizedMainChart = memo(MainChart)
+const MemoizedRiskDistributionChart = memo(RiskDistributionChart)
+const MemoizedAmountDistributionChart = memo(AmountDistributionChart)
+const MemoizedRadarChart = memo(RadarChart)
+const MemoizedPredictionForm = memo(PredictionForm)
+const MemoizedPredictionResult = memo(PredictionResult)
+const MemoizedLiveScore = memo(LiveScore)
+const MemoizedHistory = memo(History)
 
 function App() {
   const [formData, setFormData] = useState(INITIAL_FORM_DATA)
@@ -45,12 +56,17 @@ function App() {
   const [error, setError] = useState('')
   const [predictionData, setPredictionData] = useState(null)
   const [serverAvailable, setServerAvailable] = useState(true)
+  const [isAnimating, setIsAnimating] = useState(false)
 
   const chartTitle = METRIC_TITLES[currentMetric] || METRIC_TITLES.evolution
 
   useEffect(() => {
     if (window.AOS) {
-      window.AOS.init({ duration: 1000, once: true })
+      window.AOS.init({ 
+        duration: 800, 
+        once: true,
+        easing: 'ease-out-cubic'
+      })
     }
   }, [])
 
@@ -65,40 +81,44 @@ function App() {
     }
 
     checkServerHealth()
+    const interval = setInterval(checkServerHealth, 30000)
+    return () => clearInterval(interval)
   }, [])
 
-  const handleFieldChange = (name, value) => {
+  const handleFieldChange = useCallback((name, value) => {
     setFormData((previous) => ({
       ...previous,
       [name]: value,
     }))
-  }
+  }, [])
 
-  const validateForm = (payload) => {
+  const validateForm = useCallback((payload) => {
     const age = Number(payload.age)
     const creditAmount = Number(payload.credit_amount)
     const duration = Number(payload.duration)
 
     if (age < 18 || age > 100) {
-      return "L'‚ge doit Ítre compris entre 18 et 100 ans"
+      return "L'√¢ge doit √™tre compris entre 18 et 100 ans"
     }
     if (creditAmount <= 0) {
-      return 'Le montant du crÈdit doit Ítre supÈrieur ‡ 0'
+      return 'Le montant du cr√©dit doit √™tre sup√©rieur √† 0'
     }
     if (duration < 1 || duration > 72) {
-      return 'La durÈe doit Ítre comprise entre 1 et 72 mois'
+      return 'La dur√©e doit √™tre comprise entre 1 et 72 mois'
     }
     return ''
-  }
+  }, [])
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = useCallback(async (event) => {
     event.preventDefault()
     setError('')
     setPredictionData(null)
+    setIsAnimating(true)
 
     const validationError = validateForm(formData)
     if (validationError) {
       setError(validationError)
+      setIsAnimating(false)
       return
     }
 
@@ -127,172 +147,257 @@ function App() {
       setError('Erreur de connexion au serveur')
     } finally {
       setLoading(false)
+      setTimeout(() => setIsAnimating(false), 300)
     }
-  }
+  }, [formData, validateForm])
 
-  const handleReset = () => {
+  const handleReset = useCallback(() => {
+    setIsAnimating(true)
     setFormData(INITIAL_FORM_DATA)
     setError('')
     setPredictionData(null)
     setRiskFilter('all')
     setPieRiskData([70, 30])
-  }
+    setTimeout(() => setIsAnimating(false), 300)
+  }, [])
 
-  const handleChartTypeChange = (type) => {
+  const handleChartTypeChange = useCallback((type) => {
     setCurrentChartType(type)
-  }
+  }, [])
 
-  const handleMetricClick = (metric) => {
+  const handleMetricClick = useCallback((metric) => {
     setCurrentMetric(metric)
-  }
+  }, [])
 
-  const handleRiskFilterChange = (filter) => {
+  const handleRiskFilterChange = useCallback((filter) => {
     setRiskFilter(filter)
-  }
+  }, [])
+
+  const handleViewChange = useCallback((view) => {
+    setIsAnimating(true)
+    setActiveView(view)
+    setTimeout(() => setIsAnimating(false), 300)
+  }, [])
 
   return (
-    <div className="font-sans">
+    <div className="min-h-screen bg-[#0A0A0F] text-gray-100 font-sans antialiased">
+      {/* Effet de grille futuriste */}
+      <div className="fixed inset-0 bg-[linear-gradient(to_right,#1a1a2e_1px,transparent_1px),linear-gradient(to_bottom,#1a1a2e_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_110%)] pointer-events-none" />
+      
+      {/* Particules anim√©es */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-purple-600/5 rounded-full blur-3xl animate-pulse-slow" />
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-blue-600/5 rounded-full blur-3xl animate-pulse-slower" />
+      </div>
+
       <Header serverAvailable={serverAvailable} apiUrl={API_URL} />
 
-      <main className="container mx-auto max-w-7xl px-3 pb-12 sm:px-4 sm:pb-16">
-        <div className="mb-6 flex justify-center">
-          <div className="inline-flex w-full max-w-xs rounded-xl border border-gray-700 bg-gray-900/70 p-1 sm:w-auto">
+      <main className="container mx-auto max-w-7xl px-4 pb-16 relative z-10">
+        {/* Navigation */}
+        <div className="mb-8 flex justify-center animate-fade-in">
+          <div className="inline-flex rounded-2xl bg-[#16161F] p-1.5 border border-[#2A2A35] shadow-lg">
             <button
               type="button"
-              onClick={() => setActiveView('dashboard')}
-              className={`flex-1 rounded-lg px-4 py-2 text-center text-sm font-semibold transition sm:flex-none ${
+              onClick={() => handleViewChange('dashboard')}
+              className={`relative px-6 py-2.5 text-sm font-medium rounded-xl transition-all duration-300 ${
                 activeView === 'dashboard'
-                  ? 'bg-purple-600/50 text-white'
-                  : 'text-gray-300 hover:bg-gray-800'
+                  ? 'text-white'
+                  : 'text-gray-400 hover:text-gray-200'
               }`}
             >
-              Dashboard
+              {activeView === 'dashboard' && (
+                <span className="absolute inset-0 bg-purple-600 rounded-xl animate-slide-in" />
+              )}
+              <span className="relative z-10 flex items-center gap-2">
+                <i className="fas fa-chart-pie text-sm" />
+                Dashboard
+              </span>
             </button>
             <button
               type="button"
-              onClick={() => setActiveView('history')}
-              className={`flex-1 rounded-lg px-4 py-2 text-center text-sm font-semibold transition sm:flex-none ${
+              onClick={() => handleViewChange('history')}
+              className={`relative px-6 py-2.5 text-sm font-medium rounded-xl transition-all duration-300 ${
                 activeView === 'history'
-                  ? 'bg-purple-600/50 text-white'
-                  : 'text-gray-300 hover:bg-gray-800'
+                  ? 'text-white'
+                  : 'text-gray-400 hover:text-gray-200'
               }`}
             >
-              Historique
+              {activeView === 'history' && (
+                <span className="absolute inset-0 bg-purple-600 rounded-xl animate-slide-in" />
+              )}
+              <span className="relative z-10 flex items-center gap-2">
+                <i className="fas fa-history text-sm" />
+                Historique
+              </span>
             </button>
           </div>
         </div>
 
-        {activeView === 'history' ? (
-          <History />
-        ) : (
-          <>
-            <StatsCards
-              onMetricClick={handleMetricClick}
-              currentMetric={currentMetric}
-            />
-
-            <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleChartTypeChange('line')}
-                  className={`rounded-lg border border-purple-500/30 px-3 py-1 text-sm transition hover:bg-purple-600/40 ${
-                    currentChartType === 'line' ? 'bg-purple-600/40' : 'bg-purple-600/20'
-                  }`}
-                >
-                  <i className="fas fa-chart-line" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleChartTypeChange('bar')}
-                  className={`rounded-lg border border-purple-500/30 px-3 py-1 text-sm transition hover:bg-purple-600/40 ${
-                    currentChartType === 'bar' ? 'bg-purple-600/40' : 'bg-purple-600/20'
-                  }`}
-                >
-                  <i className="fas fa-chart-bar" />
-                </button>
+        {/* Contenu avec animation de transition */}
+        <div className={`transition-all duration-300 transform ${
+          isAnimating ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
+        }`}>
+          {activeView === 'history' ? (
+            <div className="animate-fade-in-up">
+              <MemoizedHistory />
+            </div>
+          ) : (
+            <>
+              {/* Stats Cards */}
+              <div className="animate-fade-in-up animation-delay-100">
+                <MemoizedStatsCards
+                  onMetricClick={handleMetricClick}
+                  currentMetric={currentMetric}
+                />
               </div>
-              <div className="flex flex-wrap items-center gap-3 sm:gap-4">
-                <button
-                  type="button"
-                  className="flex items-center rounded-lg px-2 py-1 transition hover:bg-gray-800/70"
-                  onClick={() => handleRiskFilterChange('all')}
-                >
-                  <div className="mr-2 h-3 w-3 rounded-full bg-purple-500" />
-                  <span className="text-xs text-gray-400">Tous</span>
-                </button>
-                <button
-                  type="button"
-                  className="flex items-center rounded-lg px-2 py-1 transition hover:bg-gray-800/70"
-                  onClick={() => handleRiskFilterChange('good')}
-                >
-                  <div className="mr-2 h-3 w-3 rounded-full bg-green-500" />
-                  <span className="text-xs text-gray-400">AccordÈs</span>
-                </button>
-                <button
-                  type="button"
-                  className="flex items-center rounded-lg px-2 py-1 transition hover:bg-gray-800/70"
-                  onClick={() => handleRiskFilterChange('bad')}
-                >
-                  <div className="mr-2 h-3 w-3 rounded-full bg-red-500" />
-                  <span className="text-xs text-gray-400">RefusÈs</span>
-                </button>
+
+              {/* Contr√¥les des graphiques */}
+              <div className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 animate-fade-in-up animation-delay-200">
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleChartTypeChange('line')}
+                    className={`w-10 h-10 rounded-xl border transition-all duration-300 flex items-center justify-center ${
+                      currentChartType === 'line'
+                        ? 'bg-purple-600 border-purple-500 text-white shadow-lg shadow-purple-600/20'
+                        : 'bg-[#16161F] border-[#2A2A35] text-gray-400 hover:bg-[#1F1F2B] hover:border-purple-500/50'
+                    }`}
+                  >
+                    <i className="fas fa-chart-line text-sm" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleChartTypeChange('bar')}
+                    className={`w-10 h-10 rounded-xl border transition-all duration-300 flex items-center justify-center ${
+                      currentChartType === 'bar'
+                        ? 'bg-purple-600 border-purple-500 text-white shadow-lg shadow-purple-600/20'
+                        : 'bg-[#16161F] border-[#2A2A35] text-gray-400 hover:bg-[#1F1F2B] hover:border-purple-500/50'
+                    }`}
+                  >
+                    <i className="fas fa-chart-bar text-sm" />
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <button
+                    type="button"
+                    onClick={() => handleRiskFilterChange('all')}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all duration-300 ${
+                      riskFilter === 'all'
+                        ? 'bg-purple-600 border-purple-500 text-white shadow-lg shadow-purple-600/20'
+                        : 'bg-[#16161F] border-[#2A2A35] text-gray-400 hover:bg-[#1F1F2B] hover:border-purple-500/50'
+                    }`}
+                  >
+                    <span className="w-2 h-2 rounded-full bg-purple-400" />
+                    <span className="text-sm font-medium">Tous</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleRiskFilterChange('good')}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all duration-300 ${
+                      riskFilter === 'good'
+                        ? 'bg-green-600 border-green-500 text-white shadow-lg shadow-green-600/20'
+                        : 'bg-[#16161F] border-[#2A2A35] text-gray-400 hover:bg-[#1F1F2B] hover:border-green-500/50'
+                    }`}
+                  >
+                    <span className="w-2 h-2 rounded-full bg-green-400" />
+                    <span className="text-sm font-medium">Accord√©s</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleRiskFilterChange('bad')}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl border transition-all duration-300 ${
+                      riskFilter === 'bad'
+                        ? 'bg-red-600 border-red-500 text-white shadow-lg shadow-red-600/20'
+                        : 'bg-[#16161F] border-[#2A2A35] text-gray-400 hover:bg-[#1F1F2B] hover:border-red-500/50'
+                    }`}
+                  >
+                    <span className="w-2 h-2 rounded-full bg-red-400" />
+                    <span className="text-sm font-medium">Refus√©s</span>
+                  </button>
+                </div>
               </div>
-            </div>
 
-            <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-              <MainChart
-                chartType={currentChartType}
-                metric={currentMetric}
-                riskFilter={riskFilter}
-                title={chartTitle}
-              />
-              <RiskDistributionChart
-                riskData={pieRiskData}
-                riskFilter={riskFilter}
-                onRiskFilterChange={handleRiskFilterChange}
-              />
-            </div>
+              {/* Graphiques principaux */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div className="animate-fade-in-up animation-delay-300">
+                  <MemoizedMainChart
+                    chartType={currentChartType}
+                    metric={currentMetric}
+                    riskFilter={riskFilter}
+                    title={chartTitle}
+                  />
+                </div>
+                <div className="animate-fade-in-up animation-delay-400">
+                  <MemoizedRiskDistributionChart
+                    riskData={pieRiskData}
+                    riskFilter={riskFilter}
+                    onRiskFilterChange={handleRiskFilterChange}
+                  />
+                </div>
+              </div>
 
-            <div className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
-              <AmountDistributionChart amountValue={formData.credit_amount} />
-              <RadarChart formData={formData} />
-            </div>
+              {/* Graphiques secondaires */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div className="animate-fade-in-up animation-delay-500">
+                  <MemoizedAmountDistributionChart amountValue={formData.credit_amount} />
+                </div>
+                <div className="animate-fade-in-up animation-delay-600">
+                  <MemoizedRadarChart formData={formData} />
+                </div>
+              </div>
 
-            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-              <PredictionForm
-                formData={formData}
-                onChange={handleFieldChange}
-                onSubmit={handleSubmit}
-                onReset={handleReset}
-                loading={loading}
-              />
-
-              <div className="space-y-6">
-                {loading && (
-                  <div className="glass-card rounded-2xl p-8 text-center sm:p-12">
-                    <div className="spinner-modern mx-auto" />
-                    <p className="mt-6 font-medium text-gray-400">Analyse en cours...</p>
-                  </div>
-                )}
-
-                {error && (
-                  <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-4 text-center text-red-500 sm:p-6">
-                    <i className="fas fa-exclamation-triangle mb-3 text-2xl" />
-                    <p className="text-base sm:text-lg">{error}</p>
-                  </div>
-                )}
-
-                <PredictionResult
-                  predictionData={predictionData}
+              {/* Formulaire et r√©sultats */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-fade-in-up animation-delay-700">
+                <MemoizedPredictionForm
+                  formData={formData}
+                  onChange={handleFieldChange}
+                  onSubmit={handleSubmit}
                   onReset={handleReset}
+                  loading={loading}
                 />
 
-                <LiveScore formData={formData} />
+                <div className="space-y-6">
+                  {loading && (
+                    <div className="bg-[#16161F] rounded-2xl border border-[#2A2A35] p-12 text-center">
+                      <div className="relative mx-auto w-16 h-16">
+                        <div className="absolute inset-0 rounded-full border-4 border-purple-600/20" />
+                        <div className="absolute inset-0 rounded-full border-4 border-purple-600 border-t-transparent animate-spin" />
+                      </div>
+                      <p className="mt-6 text-gray-400 font-medium">
+                        Analyse en cours...
+                      </p>
+                      <p className="text-sm text-gray-500 mt-2">
+                        Calcul des probabilit√©s de remboursement
+                      </p>
+                    </div>
+                  )}
+
+                  {error && (
+                    <div className="bg-[#16161F] rounded-2xl border border-red-500/30 p-6 animate-shake">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-xl bg-red-500/10 flex items-center justify-center">
+                          <i className="fas fa-exclamation-triangle text-2xl text-red-500" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-red-500">Erreur</h3>
+                          <p className="text-sm text-gray-400 mt-1">{error}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <MemoizedPredictionResult
+                    predictionData={predictionData}
+                    onReset={handleReset}
+                  />
+
+                  <MemoizedLiveScore formData={formData} />
+                </div>
               </div>
-            </div>
-          </>
-        )}
+            </>
+          )}
+        </div>
       </main>
     </div>
   )

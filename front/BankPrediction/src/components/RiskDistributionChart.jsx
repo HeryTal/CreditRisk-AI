@@ -1,9 +1,40 @@
-﻿import { useEffect, useRef } from 'react'
+﻿import { useEffect, useRef, useState, useCallback, memo } from 'react'
 
 function RiskDistributionChart({ riskData, riskFilter, onRiskFilterChange }) {
   const canvasRef = useRef(null)
   const chartRef = useRef(null)
+  const [hoveredSegment, setHoveredSegment] = useState(null)
+  const [animatedData, setAnimatedData] = useState(riskData)
 
+  // Animation des données à l'entrée
+  useEffect(() => {
+    let startTime
+    const duration = 1000
+    const startData = [50, 50]
+    
+    const animate = (timestamp) => {
+      if (!startTime) startTime = timestamp
+      const progress = Math.min((timestamp - startTime) / duration, 1)
+      
+      // Easing cubic-out pour un effet plus naturel
+      const eased = 1 - Math.pow(1 - progress, 3)
+      
+      const newData = [
+        startData[0] + (riskData[0] - startData[0]) * eased,
+        startData[1] + (riskData[1] - startData[1]) * eased
+      ]
+      
+      setAnimatedData(newData)
+      
+      if (progress < 1) {
+        requestAnimationFrame(animate)
+      }
+    }
+    
+    requestAnimationFrame(animate)
+  }, [riskData])
+
+  // Création du graphique
   useEffect(() => {
     const Chart = window.Chart
     if (!Chart || !canvasRef.current) {
@@ -14,31 +45,68 @@ function RiskDistributionChart({ riskData, riskFilter, onRiskFilterChange }) {
       chartRef.current.destroy()
     }
 
-    const context = canvasRef.current.getContext('2d')
-    chartRef.current = new Chart(context, {
+    const ctx = canvasRef.current.getContext('2d')
+    
+    // Créer un dégradé pour plus d'effet
+    const gradient1 = ctx.createLinearGradient(0, 0, 0, 400)
+    gradient1.addColorStop(0, '#22C55E')
+    gradient1.addColorStop(1, '#16A34A')
+    
+    const gradient2 = ctx.createLinearGradient(0, 0, 0, 400)
+    gradient2.addColorStop(0, '#EF4444')
+    gradient2.addColorStop(1, '#DC2626')
+
+    chartRef.current = new Chart(ctx, {
       type: 'doughnut',
       data: {
-        labels: ['Risque faible', 'Risque eleve'],
+        labels: ['Risque faible', 'Risque élevé'],
         datasets: [
           {
-            data: riskData,
-            backgroundColor: ['#10b981', '#ef4444'],
+            data: animatedData,
+            backgroundColor: [gradient1, gradient2],
             borderColor: 'transparent',
+            borderRadius: 8,
+            spacing: 4,
+            hoverOffset: 15,
+            weight: 0.5
           },
         ],
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        cutout: '70%',
+        radius: '90%',
+        animation: {
+          animateRotate: true,
+          animateScale: true,
+          duration: 2000,
+          easing: 'easeOutQuart'
+        },
         plugins: {
           legend: { display: false },
           tooltip: {
+            enabled: true,
+            backgroundColor: '#1E1E2A',
+            titleColor: '#F3F4F6',
+            bodyColor: '#9CA3AF',
+            borderColor: '#2A2A35',
+            borderWidth: 1,
+            padding: 12,
+            cornerRadius: 12,
+            displayColors: true,
             callbacks: {
-              label(context) {
-                return `${context.raw}%`
+              label: (context) => {
+                const value = context.raw.toFixed(1)
+                return `${value}% des demandes`
               },
-            },
-          },
+              afterLabel: (context) => {
+                const total = riskData[0] + riskData[1]
+                const percentage = ((context.raw / total) * 100).toFixed(1)
+                return `Taux: ${percentage}%`
+              }
+            }
+          }
         },
         onClick: (_event, elements) => {
           if (elements.length > 0) {
@@ -46,6 +114,13 @@ function RiskDistributionChart({ riskData, riskFilter, onRiskFilterChange }) {
             onRiskFilterChange(index === 0 ? 'good' : 'bad')
           }
         },
+        onHover: (_event, elements) => {
+          if (elements.length > 0) {
+            setHoveredSegment(elements[0].index)
+          } else {
+            setHoveredSegment(null)
+          }
+        }
       },
     })
 
@@ -55,57 +130,166 @@ function RiskDistributionChart({ riskData, riskFilter, onRiskFilterChange }) {
         chartRef.current = null
       }
     }
-  }, [riskData, onRiskFilterChange])
+  }, [animatedData, onRiskFilterChange])
+
+  const handleFilterChange = useCallback((filter) => {
+    onRiskFilterChange(filter)
+  }, [onRiskFilterChange])
 
   return (
-    <div className="glass-card rounded-2xl p-6">
-      <div className="mb-4 flex items-center justify-between">
-        <h3 className="flex items-center text-lg font-semibold">
-          <i className="fas fa-chart-pie mr-2 text-pink-500" />
-          Distribution des risques
-        </h3>
-        <div className="text-sm text-gray-400">
-          <span>{riskData[0]}%</span> / <span>{riskData[1]}%</span>
+    <div className={`
+      bg-[#16161F] rounded-2xl border border-[#2A2A35] p-6
+      transition-all duration-500 hover:border-purple-600/30
+      animate-fade-in-up
+    `}>
+      {/* En-tête */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-purple-600/10 flex items-center justify-center">
+            <i className="fas fa-chart-pie text-purple-400" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-white">Distribution des risques</h3>
+            <p className="text-xs text-gray-500 mt-0.5">Analyse des demandes</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium text-white">{riskData[0]}%</span>
+          <span className="text-gray-500">/</span>
+          <span className="text-sm font-medium text-white">{riskData[1]}%</span>
         </div>
       </div>
-      <div className="chart-container">
-        <canvas ref={canvasRef} />
+
+      {/* Graphique */}
+      <div className="relative h-64 mb-6">
+        <canvas ref={canvasRef} className="w-full h-full" />
+        
+        {/* Centre du doughnut avec statistiques */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="text-center">
+            <div className="text-3xl font-bold text-white">
+              {riskData[0] + riskData[1]}
+            </div>
+            <div className="text-xs text-gray-500 mt-1">Total demandes</div>
+          </div>
+        </div>
       </div>
-      <div className="mt-4 flex flex-wrap justify-center gap-3">
+
+      {/* Légendes interactives */}
+      <div className="grid grid-cols-2 gap-3 mb-4">
         <button
           type="button"
-          className={`flex cursor-pointer items-center rounded-lg px-2 py-1 transition ${
-            riskFilter === 'good' ? 'bg-green-500/20 text-green-300' : 'text-gray-300'
-          }`}
-          onClick={() => onRiskFilterChange('good')}
+          onClick={() => handleFilterChange('good')}
+          className={`
+            relative overflow-hidden group
+            bg-[#1A1A24] rounded-xl border p-4
+            transition-all duration-300
+            ${riskFilter === 'good' 
+              ? 'border-green-600/50 bg-green-600/5' 
+              : 'border-[#2A2A35] hover:border-green-600/30 hover:bg-green-600/5'
+            }
+          `}
         >
-          <div className="mr-2 h-3 w-3 rounded-full bg-green-500" />
-          <span className="text-xs text-gray-400">Risque faible</span>
+          {/* Indicateur de sélection */}
+          {riskFilter === 'good' && (
+            <div className="absolute inset-0 bg-green-600/5 animate-pulse" />
+          )}
+          
+          <div className="relative flex items-center gap-3">
+            <div className={`
+              w-3 h-3 rounded-full bg-green-500
+              transition-all duration-300
+              ${riskFilter === 'good' ? 'scale-125' : ''}
+              ${hoveredSegment === 0 ? 'animate-ping' : ''}
+            `} />
+            <div className="flex-1 text-left">
+              <div className="text-sm font-medium text-white">
+                Risque faible
+              </div>
+              <div className="flex items-center justify-between mt-1">
+                <span className="text-xs text-gray-500">Demandes</span>
+                <span className="text-sm font-bold text-green-400">
+                  {riskData[0].toFixed(1)}%
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Barre de progression */}
+          <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#2A2A35]">
+            <div 
+              className="h-full bg-green-500 transition-all duration-500"
+              style={{ width: `${riskData[0]}%` }}
+            />
+          </div>
         </button>
+
         <button
           type="button"
-          className={`flex cursor-pointer items-center rounded-lg px-2 py-1 transition ${
-            riskFilter === 'bad' ? 'bg-red-500/20 text-red-300' : 'text-gray-300'
-          }`}
-          onClick={() => onRiskFilterChange('bad')}
+          onClick={() => handleFilterChange('bad')}
+          className={`
+            relative overflow-hidden group
+            bg-[#1A1A24] rounded-xl border p-4
+            transition-all duration-300
+            ${riskFilter === 'bad' 
+              ? 'border-red-600/50 bg-red-600/5' 
+              : 'border-[#2A2A35] hover:border-red-600/30 hover:bg-red-600/5'
+            }
+          `}
         >
-          <div className="mr-2 h-3 w-3 rounded-full bg-red-500" />
-          <span className="text-xs text-gray-400">Risque eleve</span>
-        </button>
-        <button
-          type="button"
-          className={`rounded-lg border px-2 py-1 text-xs transition ${
-            riskFilter === 'all'
-              ? 'border-purple-500/50 bg-purple-600/30 text-white'
-              : 'border-gray-700 bg-gray-800 text-gray-300'
-          }`}
-          onClick={() => onRiskFilterChange('all')}
-        >
-          Tous
+          {/* Indicateur de sélection */}
+          {riskFilter === 'bad' && (
+            <div className="absolute inset-0 bg-red-600/5 animate-pulse" />
+          )}
+          
+          <div className="relative flex items-center gap-3">
+            <div className={`
+              w-3 h-3 rounded-full bg-red-500
+              transition-all duration-300
+              ${riskFilter === 'bad' ? 'scale-125' : ''}
+              ${hoveredSegment === 1 ? 'animate-ping' : ''}
+            `} />
+            <div className="flex-1 text-left">
+              <div className="text-sm font-medium text-white">
+                Risque élevé
+              </div>
+              <div className="flex items-center justify-between mt-1">
+                <span className="text-xs text-gray-500">Demandes</span>
+                <span className="text-sm font-bold text-red-400">
+                  {riskData[1].toFixed(1)}%
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Barre de progression */}
+          <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#2A2A35]">
+            <div 
+              className="h-full bg-red-500 transition-all duration-500"
+              style={{ width: `${riskData[1]}%` }}
+            />
+          </div>
         </button>
       </div>
+
+      {/* Bouton "Tous" */}
+      <button
+        type="button"
+        onClick={() => handleFilterChange('all')}
+        className={`
+          w-full py-3 rounded-xl border transition-all duration-300
+          flex items-center justify-center gap-2 text-sm font-medium
+          ${riskFilter === 'all'
+            ? 'bg-purple-600 border-purple-500 text-white shadow-lg shadow-purple-600/20'
+            : 'bg-[#1A1A24] border-[#2A2A35] text-gray-400 hover:bg-[#1F1F2B] hover:border-purple-600/30'
+          }
+        `}
+      >
+        <i className={`fas fa-eye text-xs ${riskFilter === 'all' ? 'text-white' : 'text-gray-500'}`} />
+        Voir toutes les demandes
+      </button>
     </div>
   )
 }
 
-export default RiskDistributionChart
+export default memo(RiskDistributionChart)
