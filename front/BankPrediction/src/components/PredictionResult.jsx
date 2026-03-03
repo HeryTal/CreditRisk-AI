@@ -4,22 +4,28 @@ function PredictionResult({ predictionData, onReset }) {
   const [animatedConfidence, setAnimatedConfidence] = useState(0)
   const [animatedRisk, setAnimatedRisk] = useState(0)
   const [showDetails, setShowDetails] = useState(false)
-  const [isHovered, setIsHovered] = useState(false)
 
-  if (!predictionData) return null
-
-  const isGoodPrediction = predictionData.prediction === 'good'
-  const confidence = Math.min(100, Number((predictionData.probability * 100).toFixed(1)))
-  const riskScore = Math.min(100, Number((predictionData.risk_score ?? predictionData.probability * 100).toFixed(1)))
-  const explanationFactors = Array.isArray(predictionData.explanation)
+  const probability = Number(predictionData?.probability ?? 0)
+  const isGoodPrediction = predictionData?.prediction === 'good'
+  const confidence = Math.min(100, Number((probability * 100).toFixed(1)))
+  const riskScore = Math.min(
+    100,
+    Number((predictionData?.risk_score ?? probability * 100).toFixed(1)),
+  )
+  const explanationFactors = Array.isArray(predictionData?.explanation)
     ? predictionData.explanation.slice(0, 3)
     : []
 
   // Animation des scores
   useEffect(() => {
+    if (!predictionData) {
+      return undefined
+    }
+
     const duration = 1500
     const startTime = Date.now()
-    
+    let frameId
+
     const animate = () => {
       const elapsed = Date.now() - startTime
       const progress = Math.min(elapsed / duration, 1)
@@ -33,12 +39,18 @@ function PredictionResult({ predictionData, onReset }) {
       setAnimatedRisk(riskScore * eased)
       
       if (progress < 1) {
-        requestAnimationFrame(animate)
+        frameId = requestAnimationFrame(animate)
       }
     }
     
-    requestAnimationFrame(animate)
-  }, [confidence, riskScore])
+    frameId = requestAnimationFrame(animate)
+
+    return () => {
+      if (frameId) cancelAnimationFrame(frameId)
+    }
+  }, [predictionData, confidence, riskScore])
+
+  if (!predictionData) return null
 
   const getRiskLevel = (score) => {
     if (score < 30) return { label: 'Très faible', color: 'green', icon: 'fa-shield-alt' }
@@ -285,8 +297,6 @@ function PredictionResult({ predictionData, onReset }) {
           
           <button
             type="button"
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
             className="p-3 bg-[#1A1A24] rounded-xl border border-[#2A2A35] 
                      text-gray-400 transition-all
                      hover:bg-[#1F1F2B] hover:border-purple-600/30 hover:text-purple-400"
