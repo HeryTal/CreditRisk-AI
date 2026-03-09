@@ -26,11 +26,11 @@ const INITIAL_FORM_DATA = {
 }
 
 const METRIC_TITLES = {
-  evolution: 'Évolution des crédits',
-  solvability: 'Taux de solvabilité',
-  amount: 'Montants moyens (k€)',
-  duration: 'Durées moyennes (mois)',
-  accuracy: 'Précision du modèle (%)',
+  evolution: 'Credit trends',
+  solvability: 'Solvency rate',
+  amount: 'Average amounts (kEUR)',
+  duration: 'Average durations (months)',
+  accuracy: 'Model accuracy (%)',
 }
 
 // Composants memoïsés pour éviter les re-rendus inutiles
@@ -97,13 +97,13 @@ function App() {
     const duration = Number(payload.duration)
 
     if (age < 18 || age > 100) {
-      return "L'âge doit être compris entre 18 et 100 ans"
+      return 'Age must be between 18 and 100 years'
     }
     if (creditAmount <= 0) {
-      return 'Le montant du crédit doit être supérieur à 0'
+      return 'Credit amount must be greater than 0'
     }
     if (duration < 1 || duration > 72) {
-      return 'La durée doit être comprise entre 1 et 72 mois'
+      return 'Duration must be between 1 and 72 months'
     }
     return ''
   }, [])
@@ -134,7 +134,7 @@ function App() {
       const data = await response.json().catch(() => null)
 
       if (!response.ok || !data?.success) {
-        setError(data?.error || `Erreur serveur (${response.status})`)
+        setError(data?.error || `Server error (${response.status})`)
         return
       }
 
@@ -143,7 +143,7 @@ function App() {
       setPieRiskData(isGood ? [85, 15] : [30, 70])
       setRiskFilter('all')
     } catch {
-      setError('Erreur de connexion au serveur')
+      setError('Server connection error')
     } finally {
       setLoading(false)
       setTimeout(() => setIsAnimating(false), 300)
@@ -226,7 +226,7 @@ function App() {
               )}
               <span className="relative z-10 flex items-center gap-2">
                 <i className="fas fa-history text-sm" />
-                Historique
+                History
               </span>
             </button>
           </div>
@@ -288,7 +288,7 @@ function App() {
                     }`}
                   >
                     <span className="w-2 h-2 rounded-full bg-purple-400" />
-                    <span className="text-sm font-medium">Tous</span>
+                    <span className="text-sm font-medium">All</span>
                   </button>
                   <button
                     type="button"
@@ -300,7 +300,7 @@ function App() {
                     }`}
                   >
                     <span className="w-2 h-2 rounded-full bg-green-400" />
-                    <span className="text-sm font-medium">Accordés</span>
+                    <span className="text-sm font-medium">Approved</span>
                   </button>
                   <button
                     type="button"
@@ -312,7 +312,7 @@ function App() {
                     }`}
                   >
                     <span className="w-2 h-2 rounded-full bg-red-400" />
-                    <span className="text-sm font-medium">Refusés</span>
+                    <span className="text-sm font-medium">Rejected</span>
                   </button>
                 </div>
               </div>
@@ -364,7 +364,7 @@ function App() {
                           <i className="fas fa-exclamation-triangle text-2xl text-red-500" />
                         </div>
                         <div>
-                          <h3 className="font-semibold text-red-500">Erreur</h3>
+                          <h3 className="font-semibold text-red-500">Error</h3>
                           <p className="text-sm text-gray-400 mt-1">{error}</p>
                         </div>
                       </div>
@@ -392,10 +392,10 @@ function App() {
               <div className="absolute inset-0 rounded-full border-4 border-purple-500 border-t-transparent animate-spin" />
             </div>
             <p className="mt-6 text-gray-100 text-lg font-semibold">
-              Analyse IA en cours...
+              AI analysis in progress...
             </p>
             <p className="mt-2 text-sm text-gray-400">
-              Merci de patienter pendant le calcul du score
+              Please wait while the score is being calculated
             </p>
           </div>
         </div>

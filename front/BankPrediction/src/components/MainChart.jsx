@@ -18,11 +18,11 @@ const METRIC_CONFIG = {
     description: 'Capacité de remboursement'
   },
   amount: {
-    title: 'Montants moyens',
+    title: 'Average amounts',
     icon: 'fa-coins',
     approved: [2.8, 3.0, 3.1, 3.2, 3.3, 3.2],
     denied: [1.7, 1.8, 1.9, 2.1, 2.0, 2.2],
-    unit: 'k€',
+    unit: 'kEUR',
     description: 'Montant moyen des crédits'
   },
   duration: {
@@ -30,7 +30,7 @@ const METRIC_CONFIG = {
     icon: 'fa-hourglass-half',
     approved: [18, 19, 20, 21, 21, 21],
     denied: [29, 28, 27, 26, 27, 25],
-    unit: 'mois',
+    unit: 'months',
     description: 'Durée moyenne des crédits'
   },
   accuracy: {

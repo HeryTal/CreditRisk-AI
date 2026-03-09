@@ -24,12 +24,12 @@ function History() {
       const response = await fetch(`${API_URL}/history`)
       const data = await response.json()
       if (!data.success) {
-        setError(data.error || 'Erreur lors du chargement de l historique')
+        setError(data.error || 'Error while loading history')
         return
       }
       setPredictions(Array.isArray(data.predictions) ? data.predictions : [])
     } catch {
-      setError('Erreur de connexion')
+      setError('Connection error')
     } finally {
       if (withLoading) {
         setLoading(false)
@@ -56,7 +56,7 @@ function History() {
   }, [fetchHistory, fetchStats])
 
   const clearHistory = async () => {
-    if (!window.confirm('Voulez-vous vraiment effacer tout l historique ?')) {
+    if (!window.confirm('Do you really want to clear all history?')) {
       return
     }
 
@@ -74,10 +74,10 @@ function History() {
         })
         setSelectedPredictionId(null)
       } else {
-        setError(data.error || 'Erreur lors de l effacement')
+        setError(data.error || 'Error while clearing history')
       }
     } catch {
-      setError('Erreur lors de l effacement')
+      setError('Error while clearing history')
     }
   }
 
@@ -88,9 +88,9 @@ function History() {
   const formatDate = (timestamp) => {
     const date = new Date(timestamp)
     if (Number.isNaN(date.getTime())) {
-      return 'Date inconnue'
+      return 'Unknown date'
     }
-    return date.toLocaleDateString('fr-FR', {
+    return date.toLocaleDateString('en-US', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
@@ -151,7 +151,7 @@ function History() {
     const isGood = prediction === 'good'
     return (
       <span className={`rounded-full px-2 py-1 text-xs font-bold ${isGood ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>
-        {isGood ? 'Risque Faible' : 'Risque Eleve'}
+        {isGood ? 'Low Risk' : 'High Risk'}
       </span>
     )
   }
@@ -160,7 +160,7 @@ function History() {
     return (
       <div className="glass-card rounded-2xl p-8 text-center">
         <div className="spinner-modern mx-auto" />
-        <p className="mt-6 font-medium text-gray-400">Chargement de l historique...</p>
+        <p className="mt-6 font-medium text-gray-400">Loading history...</p>
       </div>
     )
   }
@@ -170,9 +170,9 @@ function History() {
       <div className="glass-card rounded-2xl p-4 sm:p-6">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <h2 className="text-xl font-bold sm:text-2xl">Historique des Predictions</h2>
+            <h2 className="text-xl font-bold sm:text-2xl">Prediction history</h2>
             <p className="mt-1 text-gray-400">
-              {filteredPredictions.length} resultat{filteredPredictions.length !== 1 ? 's' : ''} filtre{filteredPredictions.length !== 1 ? 's' : ''}
+              {filteredPredictions.length} result{filteredPredictions.length !== 1 ? 's' : ''} filtered{filteredPredictions.length !== 1 ? 's' : ''}
               {' / '}
               {predictions.length} total
             </p>
@@ -185,7 +185,7 @@ function History() {
               className="w-full rounded-xl border border-gray-700 bg-gray-800 px-4 py-2 text-sm hover:bg-gray-700 sm:w-auto"
             >
               <i className="fas fa-rotate-right mr-2" />
-              Recharger
+              Reload
             </button>
             <button
               type="button"
@@ -193,7 +193,7 @@ function History() {
               className="w-full rounded-xl border border-purple-500/30 bg-purple-600/20 px-4 py-2 text-sm hover:bg-purple-600/40 sm:w-auto"
             >
               <i className="fas fa-chart-bar mr-2" />
-              {showStats ? 'Masquer stats' : 'Voir stats'}
+              {showStats ? 'Hide stats' : 'Show stats'}
             </button>
             <button
               type="button"
@@ -202,7 +202,7 @@ function History() {
               disabled={predictions.length === 0}
             >
               <i className="fas fa-trash mr-2" />
-              Effacer
+              Clear
             </button>
           </div>
         </div>
@@ -212,7 +212,7 @@ function History() {
             type="text"
             value={searchText}
             onChange={(event) => setSearchText(event.target.value)}
-            placeholder="Rechercher (ID, age, montant, date...)"
+            placeholder="Search (ID, age, amount, date...)"
             className="modern-input rounded-xl px-4 py-3 text-sm"
           />
 
@@ -221,9 +221,9 @@ function History() {
             onChange={(event) => setRiskFilter(event.target.value)}
             className="modern-select rounded-xl px-4 py-3 text-sm"
           >
-            <option value="all">Tous les resultats</option>
-            <option value="good">Risque faible</option>
-            <option value="bad">Risque eleve</option>
+            <option value="all">Tous les results</option>
+            <option value="good">Low risk</option>
+            <option value="bad">High risk</option>
           </select>
 
           <select
@@ -231,16 +231,16 @@ function History() {
             onChange={(event) => setPeriodFilter(event.target.value)}
             className="modern-select rounded-xl px-4 py-3 text-sm"
           >
-            <option value="all">Toutes les periodes</option>
-            <option value="7d">7 derniers jours</option>
-            <option value="30d">30 derniers jours</option>
+            <option value="all">All periods</option>
+            <option value="7d">Last 7 days</option>
+            <option value="30d">Last 30 days</option>
           </select>
         </div>
       </div>
 
       {showStats && stats && (
         <div className="glass-card rounded-2xl p-4 sm:p-6">
-          <h3 className="mb-4 text-lg font-semibold">Statistiques globales</h3>
+          <h3 className="mb-4 text-lg font-semibold">Overall statistics</h3>
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5">
             <div className="rounded-xl bg-gray-800/50 p-4 text-center">
               <div className="text-2xl font-bold text-purple-500">{stats.total}</div>
@@ -248,19 +248,19 @@ function History() {
             </div>
             <div className="rounded-xl bg-gray-800/50 p-4 text-center">
               <div className="text-2xl font-bold text-green-500">{stats.good}</div>
-              <div className="text-xs text-gray-400">Risque faible</div>
+              <div className="text-xs text-gray-400">Low risk</div>
             </div>
             <div className="rounded-xl bg-gray-800/50 p-4 text-center">
               <div className="text-2xl font-bold text-red-500">{stats.bad}</div>
-              <div className="text-xs text-gray-400">Risque eleve</div>
+              <div className="text-xs text-gray-400">High risk</div>
             </div>
             <div className="rounded-xl bg-gray-800/50 p-4 text-center">
               <div className="text-2xl font-bold text-blue-500">{stats.good_percentage}%</div>
-              <div className="text-xs text-gray-400">Taux acceptation</div>
+              <div className="text-xs text-gray-400">Approval rate</div>
             </div>
             <div className="rounded-xl bg-gray-800/50 p-4 text-center">
               <div className="text-2xl font-bold text-yellow-500">{stats.average_confidence}%</div>
-              <div className="text-xs text-gray-400">Confiance moyenne</div>
+              <div className="text-xs text-gray-400">Average confidence</div>
             </div>
           </div>
         </div>
@@ -276,8 +276,8 @@ function History() {
       {filteredPredictions.length === 0 ? (
         <div className="glass-card rounded-2xl p-8 text-center sm:p-12">
           <i className="fas fa-inbox mb-4 text-4xl text-gray-600" />
-          <p className="text-gray-400">Aucun resultat pour ces filtres</p>
-          <p className="mt-2 text-sm text-gray-500">Change les filtres ou lance de nouvelles predictions.</p>
+          <p className="text-gray-400">Aucun result pour ces filtereds</p>
+          <p className="mt-2 text-sm text-gray-500">Change les filtereds ou lance de nouvelles predictions.</p>
         </div>
       ) : (
         <div className="glass-card overflow-hidden rounded-2xl">
@@ -293,9 +293,9 @@ function History() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 text-xs text-gray-300">
-                  <p>Age: {prediction.input?.age} ans</p>
-                  <p>Duree: {prediction.input?.duration} mois</p>
-                  <p className="col-span-2">Montant: {prediction.input?.credit_amount} EUR</p>
+                  <p>Age: {prediction.input?.age} years</p>
+                  <p>Duration: {prediction.input?.duration} months</p>
+                  <p className="col-span-2">Amount: {prediction.input?.credit_amount} EUR</p>
                 </div>
 
                 <div className="mt-3 flex items-center">
@@ -317,7 +317,7 @@ function History() {
                   }
                   className="mt-3 w-full rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-xs text-gray-200 hover:bg-gray-700"
                 >
-                  {selectedPredictionId === prediction.id ? 'Fermer les details' : 'Voir les details'}
+                  {selectedPredictionId === prediction.id ? 'Close details' : 'View details'}
                 </button>
               </div>
             ))}
@@ -331,9 +331,9 @@ function History() {
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400">Date</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400">Age</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400">Montant</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400">Duree</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400">Resultat</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400">Confiance</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400">Duration</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400">Result</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400">Confidence</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400">Details</th>
                 </tr>
               </thead>
@@ -342,9 +342,9 @@ function History() {
                   <tr key={prediction.id} className="transition hover:bg-gray-800/30">
                     <td className="px-4 py-3 text-sm text-gray-400">#{prediction.id}</td>
                     <td className="px-4 py-3 text-sm text-gray-400">{formatDate(prediction.timestamp)}</td>
-                    <td className="px-4 py-3 text-sm text-white">{prediction.input?.age} ans</td>
+                    <td className="px-4 py-3 text-sm text-white">{prediction.input?.age} years</td>
                     <td className="px-4 py-3 text-sm text-white">{prediction.input?.credit_amount} EUR</td>
-                    <td className="px-4 py-3 text-sm text-white">{prediction.input?.duration} mois</td>
+                    <td className="px-4 py-3 text-sm text-white">{prediction.input?.duration} months</td>
                     <td className="px-4 py-3">{getRiskBadge(prediction.prediction)}</td>
                     <td className="px-4 py-3 text-sm">
                       <div className="flex items-center">
@@ -367,7 +367,7 @@ function History() {
                         }
                         className="rounded-lg border border-gray-700 bg-gray-800 px-3 py-1.5 text-xs text-gray-200 hover:bg-gray-700"
                       >
-                        {selectedPredictionId === prediction.id ? 'Fermer' : 'Voir'}
+                        {selectedPredictionId === prediction.id ? 'Close' : 'View'}
                       </button>
                     </td>
                   </tr>
@@ -381,26 +381,26 @@ function History() {
       {selectedPrediction && (
         <div className="glass-card rounded-2xl p-4 sm:p-6">
           <h3 className="mb-4 text-base font-semibold sm:text-lg">
-            Detail prediction #{selectedPrediction.id}
+            Prediction details #{selectedPrediction.id}
           </h3>
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <div className="rounded-xl bg-gray-800/40 p-4">
-              <h4 className="mb-3 text-sm font-semibold text-gray-300">Entree client</h4>
+              <h4 className="mb-3 text-sm font-semibold text-gray-300">Client input</h4>
               <ul className="space-y-1 text-sm text-gray-400">
                 <li>Age: {selectedPrediction.input?.age}</li>
-                <li>Sexe: {selectedPrediction.input?.sex}</li>
+                <li>Sex: {selectedPrediction.input?.sex}</li>
                 <li>Job: {selectedPrediction.input?.job}</li>
-                <li>Logement: {selectedPrediction.input?.housing}</li>
-                <li>Epargne: {selectedPrediction.input?.saving_accounts}</li>
-                <li>Compte courant: {selectedPrediction.input?.checking_account}</li>
-                <li>Montant: {selectedPrediction.input?.credit_amount} EUR</li>
-                <li>Duree: {selectedPrediction.input?.duration} mois</li>
+                <li>Housing: {selectedPrediction.input?.housing}</li>
+                <li>Savings: {selectedPrediction.input?.saving_accounts}</li>
+                <li>Checking account: {selectedPrediction.input?.checking_account}</li>
+                <li>Amount: {selectedPrediction.input?.credit_amount} EUR</li>
+                <li>Duration: {selectedPrediction.input?.duration} months</li>
               </ul>
             </div>
 
             <div className="rounded-xl bg-gray-800/40 p-4">
-              <h4 className="mb-3 text-sm font-semibold text-gray-300">Top facteurs IA</h4>
+              <h4 className="mb-3 text-sm font-semibold text-gray-300">Top AI factors</h4>
               {Array.isArray(selectedPrediction.explanation) && selectedPrediction.explanation.length > 0 ? (
                 <div className="space-y-3">
                   {selectedPrediction.explanation.slice(0, 3).map((factor, index) => (
@@ -416,17 +416,17 @@ function History() {
                             {index + 1}. {factor.feature}
                           </p>
                           <p className={`text-xs ${increasesRisk ? 'text-red-400' : 'text-green-400'}`}>
-                            {increasesRisk ? 'Augmente le risque' : 'Reduit le risque'} ({signedImpact >= 0 ? '+' : ''}
+                            {increasesRisk ? 'Increases risk' : 'Reduces risk'} ({signedImpact >= 0 ? '+' : ''}
                             {(signedImpact * 100).toFixed(1)} pts)
                           </p>
-                          <p className="mt-1 text-xs text-gray-500">Regle: {factor.rule}</p>
+                          <p className="mt-1 text-xs text-gray-500">Rule: {factor.rule}</p>
                         </div>
                       )
                     })()
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-gray-500">Aucune explication disponible pour cette prediction.</p>
+                <p className="text-sm text-gray-500">No explanation available for this prediction.</p>
               )}
             </div>
           </div>

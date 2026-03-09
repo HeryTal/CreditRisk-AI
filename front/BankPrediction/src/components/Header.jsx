@@ -5,7 +5,7 @@ function Header({ serverAvailable, apiUrl }) {
         <div className="mb-4 inline-block">
           <span className="rounded-full border border-purple-500/30 bg-purple-600/10 px-3 py-2 text-xs sm:px-4 sm:text-sm">
             <i className="fas fa-robot mr-2 text-purple-500" />
-            IA Analytics Dashboard
+            AI Analytics Dashboard
           </span>
         </div>
         <h1 className="mb-3 text-3xl font-black leading-tight text-white sm:text-5xl md:mb-4 md:text-6xl">CreditRisk AI</h1>

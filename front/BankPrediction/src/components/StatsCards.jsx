@@ -7,13 +7,13 @@ const STATS_CONFIG = {
     icon: 'fa-chart-line',
     color: 'purple',
     width: '70%',
-    description: 'Clients solvables',
+    description: 'Solvent customers',
     trend: '+5.2%',
     trendUp: true
   },
   amount: {
-    title: 'Montant moyen',
-    value: '€3.2k',
+    title: 'Average amount',
+    value: 'EUR 3.2k',
     icon: 'fa-coins',
     color: 'pink',
     width: '65%',
@@ -23,12 +23,12 @@ const STATS_CONFIG = {
   },
   duration: {
     title: 'Durée moyenne',
-    value: '21 mois',
+    value: '21 months',
     icon: 'fa-hourglass-half',
     color: 'blue',
     width: '45%',
     description: 'Période de remboursement',
-    trend: '-3 mois',
+    trend: '-3 months',
     trendUp: false
   },
   accuracy: {
