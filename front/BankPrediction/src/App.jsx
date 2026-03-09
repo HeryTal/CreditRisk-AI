@@ -1,7 +1,6 @@
 ﻿import { useEffect, useState, useCallback, memo } from 'react'
 import './App.css'
 import { API_URL } from './config/api'
-
 import {
   Header,
   StatsCards,
@@ -358,21 +357,6 @@ function App() {
                 />
 
                 <div className="space-y-6">
-                  {loading && (
-                    <div className="bg-[#16161F] rounded-2xl border border-[#2A2A35] p-12 text-center">
-                      <div className="relative mx-auto w-16 h-16">
-                        <div className="absolute inset-0 rounded-full border-4 border-purple-600/20" />
-                        <div className="absolute inset-0 rounded-full border-4 border-purple-600 border-t-transparent animate-spin" />
-                      </div>
-                      <p className="mt-6 text-gray-400 font-medium">
-                        Analyse en cours...
-                      </p>
-                      <p className="text-sm text-gray-500 mt-2">
-                        Calcul des probabilités de remboursement
-                      </p>
-                    </div>
-                  )}
-
                   {error && (
                     <div className="bg-[#16161F] rounded-2xl border border-red-500/30 p-6 animate-shake">
                       <div className="flex items-center gap-4">
@@ -399,6 +383,23 @@ function App() {
           )}
         </div>
       </main>
+
+      {loading && (
+        <div className="fixed inset-0 z-[100] bg-[#0A0A0F]/90 backdrop-blur-sm flex items-center justify-center">
+          <div className="text-center px-6">
+            <div className="relative mx-auto w-20 h-20">
+              <div className="absolute inset-0 rounded-full border-4 border-purple-600/20" />
+              <div className="absolute inset-0 rounded-full border-4 border-purple-500 border-t-transparent animate-spin" />
+            </div>
+            <p className="mt-6 text-gray-100 text-lg font-semibold">
+              Analyse IA en cours...
+            </p>
+            <p className="mt-2 text-sm text-gray-400">
+              Merci de patienter pendant le calcul du score
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
