@@ -2,20 +2,20 @@ import { useCallback, useEffect, useRef, useState, memo } from 'react'
 
 const METRIC_CONFIG = {
   evolution: {
-    title: 'Évolution des crédits',
+    title: 'Credit trends',
     icon: 'fa-chart-line',
     approved: [65, 72, 68, 75, 70, 78],
     denied: [28, 25, 30, 22, 27, 20],
     unit: '%',
-    description: 'Volume de crédits sur 6 mois'
+    description: 'Credit volume over 6 months'
   },
   solvability: {
-    title: 'Taux de solvabilité',
+    title: 'Solvency rate',
     icon: 'fa-shield-alt',
     approved: [65, 68, 70, 72, 71, 70],
     denied: [35, 32, 30, 28, 29, 30],
     unit: '%',
-    description: 'Capacité de remboursement'
+    description: 'Repayment capacity'
   },
   amount: {
     title: 'Average amounts',
@@ -23,27 +23,27 @@ const METRIC_CONFIG = {
     approved: [2.8, 3.0, 3.1, 3.2, 3.3, 3.2],
     denied: [1.7, 1.8, 1.9, 2.1, 2.0, 2.2],
     unit: 'kEUR',
-    description: 'Montant moyen des crédits'
+    description: 'Average credit amount'
   },
   duration: {
-    title: 'Durées moyennes',
+    title: 'Average durations',
     icon: 'fa-hourglass-half',
     approved: [18, 19, 20, 21, 21, 21],
     denied: [29, 28, 27, 26, 27, 25],
     unit: 'months',
-    description: 'Durée moyenne des crédits'
+    description: 'Average credit duration'
   },
   accuracy: {
-    title: 'Précision du modèle',
+    title: 'Model accuracy',
     icon: 'fa-bullseye',
     approved: [82, 83, 84, 85, 85, 85],
     denied: [18, 17, 16, 15, 15, 15],
     unit: '%',
-    description: 'Fiabilité des prédictions'
+    description: 'Prediction reliability'
   },
 }
 
-const MAIN_CHART_LABELS = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin']
+const MAIN_CHART_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']
 
 function MainChart({ chartType, metric, riskFilter, title }) {
   const canvasRef = useRef(null)
@@ -53,37 +53,35 @@ function MainChart({ chartType, metric, riskFilter, title }) {
 
   const config = METRIC_CONFIG[metric] || METRIC_CONFIG.evolution
 
-  // Animation des données à l'entrée
   useEffect(() => {
     let startTime
     const duration = 1200
     const startApproved = Array(6).fill(0)
     const startDenied = Array(6).fill(0)
-    
+
     const animate = (timestamp) => {
       if (!startTime) startTime = timestamp
       const progress = Math.min((timestamp - startTime) / duration, 1)
-      
-      // Easing elastic out pour un effet plus dynamique
-      const eased = progress === 1 
-        ? 1 
+
+      const eased = progress === 1
+        ? 1
         : 1 - Math.pow(2, -10 * progress) * Math.sin((progress - 0.075) * (2 * Math.PI) / 0.3)
-      
-      const newApproved = config.approved.map((val, i) => 
+
+      const newApproved = config.approved.map((val, i) =>
         startApproved[i] + (config.approved[i] - startApproved[i]) * eased
       )
-      
-      const newDenied = config.denied.map((val, i) => 
+
+      const newDenied = config.denied.map((val, i) =>
         startDenied[i] + (config.denied[i] - startDenied[i]) * eased
       )
-      
+
       setAnimatedData({ approved: newApproved, denied: newDenied })
-      
+
       if (progress < 1) {
         requestAnimationFrame(animate)
       }
     }
-    
+
     requestAnimationFrame(animate)
   }, [config])
 
@@ -96,7 +94,7 @@ function MainChart({ chartType, metric, riskFilter, title }) {
         labels: MAIN_CHART_LABELS,
         datasets: [
           {
-            label: 'Crédits accordés',
+            label: 'Approved credits',
             data: animatedData.approved,
             borderColor: '#22C55E',
             backgroundColor: isBar ? '#22C55E' : 'transparent',
@@ -116,7 +114,7 @@ function MainChart({ chartType, metric, riskFilter, title }) {
             hidden: riskFilter === 'bad',
           },
           {
-            label: 'Crédits refusés',
+            label: 'Rejected credits',
             data: animatedData.denied,
             borderColor: '#EF4444',
             backgroundColor: isBar ? '#EF4444' : 'transparent',
@@ -141,7 +139,7 @@ function MainChart({ chartType, metric, riskFilter, title }) {
         responsive: true,
         maintainAspectRatio: false,
         animation: {
-          duration: 0, // Désactivé car nous avons notre propre animation
+          duration: 0,
         },
         plugins: {
           legend: { display: false },
@@ -182,7 +180,7 @@ function MainChart({ chartType, metric, riskFilter, title }) {
           },
           x: {
             grid: { display: false },
-            ticks: { 
+            ticks: {
               color: '#9CA3AF',
               font: { size: 12 }
             },
@@ -192,7 +190,7 @@ function MainChart({ chartType, metric, riskFilter, title }) {
           mode: 'index',
           intersect: false,
         },
-        onHover: (event, elements) => {
+        onHover: (_event, elements) => {
           if (elements.length > 0) {
             setHoveredPoint(elements[0].index)
           } else {
@@ -227,7 +225,7 @@ function MainChart({ chartType, metric, riskFilter, title }) {
     const avgDenied = (animatedData.denied.reduce((a, b) => a + b, 0) / 6).toFixed(1)
     const totalApproved = animatedData.approved.reduce((a, b) => a + b, 0).toFixed(0)
     const totalDenied = animatedData.denied.reduce((a, b) => a + b, 0).toFixed(0)
-    
+
     return { avgApproved, avgDenied, totalApproved, totalDenied }
   }
 
@@ -239,7 +237,6 @@ function MainChart({ chartType, metric, riskFilter, title }) {
       transition-all duration-500 hover:border-purple-600/30
       animate-fade-in-up
     `}>
-      {/* En-tête */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-purple-600/10 flex items-center justify-center">
@@ -250,29 +247,26 @@ function MainChart({ chartType, metric, riskFilter, title }) {
             <p className="text-xs text-gray-500 mt-0.5">{config.description}</p>
           </div>
         </div>
-        
-        {/* Mini statistiques */}
+
         <div className="flex items-center gap-4">
           {riskFilter !== 'bad' && (
             <div className="text-right">
-              <div className="text-xs text-gray-500">Moy. accordés</div>
+              <div className="text-xs text-gray-500">Avg. approved</div>
               <div className="text-sm font-bold text-green-400">{stats.avgApproved}{config.unit}</div>
             </div>
           )}
           {riskFilter !== 'good' && (
             <div className="text-right">
-              <div className="text-xs text-gray-500">Moy. refusés</div>
+              <div className="text-xs text-gray-500">Avg. rejected</div>
               <div className="text-sm font-bold text-red-400">{stats.avgDenied}{config.unit}</div>
             </div>
           )}
         </div>
       </div>
 
-      {/* Graphique */}
       <div className="relative h-64 mb-6">
         <canvas ref={canvasRef} className="w-full h-full" />
-        
-        {/* Overlay au survol */}
+
         {hoveredPoint !== null && (
           <div className="absolute top-2 right-2 bg-[#1E1E2A] rounded-lg border border-[#2A2A35] p-3">
             <div className="text-xs text-gray-400 mb-1">
@@ -282,7 +276,7 @@ function MainChart({ chartType, metric, riskFilter, title }) {
               {riskFilter !== 'bad' && (
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-green-500" />
-                  <span className="text-xs text-gray-300">Accordés:</span>
+                  <span className="text-xs text-gray-300">Approved:</span>
                   <span className="text-xs font-bold text-green-400">
                     {animatedData.approved[hoveredPoint]?.toFixed(1)}{config.unit}
                   </span>
@@ -291,7 +285,7 @@ function MainChart({ chartType, metric, riskFilter, title }) {
               {riskFilter !== 'good' && (
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-red-500" />
-                  <span className="text-xs text-gray-300">Refusés:</span>
+                  <span className="text-xs text-gray-300">Rejected:</span>
                   <span className="text-xs font-bold text-red-400">
                     {animatedData.denied[hoveredPoint]?.toFixed(1)}{config.unit}
                   </span>
@@ -302,26 +296,23 @@ function MainChart({ chartType, metric, riskFilter, title }) {
         )}
       </div>
 
-      {/* Légendes interactives */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full bg-green-500" />
-            <span className="text-xs text-gray-400">Accordés</span>
+            <span className="text-xs text-gray-400">Approved</span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full bg-red-500" />
-            <span className="text-xs text-gray-400">Refusés</span>
+            <span className="text-xs text-gray-400">Rejected</span>
           </div>
         </div>
-        
-        {/* Totaux */}
+
         <div className="text-xs text-gray-500">
           Total: {stats.totalApproved}{config.unit} / {stats.totalDenied}{config.unit}
         </div>
       </div>
 
-      {/* Ligne de tendance */}
       <div className="mt-4 h-px bg-gradient-to-r from-transparent via-purple-600/30 to-transparent" />
     </div>
   )

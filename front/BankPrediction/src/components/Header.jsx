@@ -10,11 +10,11 @@ function Header({ serverAvailable, apiUrl }) {
         </div>
         <h1 className="mb-3 text-3xl font-black leading-tight text-white sm:text-5xl md:mb-4 md:text-6xl">CreditRisk AI</h1>
         <p className="mx-auto max-w-2xl px-2 text-sm text-gray-400 sm:text-base md:text-lg">
-          Analyse interactive de crédit avec visualisation en temps réel
+          Interactive credit analysis with real-time visualization
         </p>
         {!serverAvailable && (
           <p className="mx-auto mt-4 max-w-2xl rounded-xl border border-yellow-500/40 bg-yellow-500/10 px-4 py-3 text-xs text-yellow-300 sm:text-sm">
-            Backend non détecté sur {apiUrl}. Vérifie que Flask tourne.
+            Backend not detected at {apiUrl}. Make sure Flask is running.
           </p>
         )}
       </div>

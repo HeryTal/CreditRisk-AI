@@ -1,4 +1,4 @@
-﻿import { useEffect, useRef, useState, useCallback, memo } from 'react'
+import { useEffect, useRef, useState, useCallback, memo } from 'react'
 
 function RiskDistributionChart({ riskData, riskFilter, onRiskFilterChange }) {
   const canvasRef = useRef(null)
@@ -6,35 +6,32 @@ function RiskDistributionChart({ riskData, riskFilter, onRiskFilterChange }) {
   const [hoveredSegment, setHoveredSegment] = useState(null)
   const [animatedData, setAnimatedData] = useState(riskData)
 
-  // Animation des données à l'entrée
   useEffect(() => {
     let startTime
     const duration = 1000
     const startData = [50, 50]
-    
+
     const animate = (timestamp) => {
       if (!startTime) startTime = timestamp
       const progress = Math.min((timestamp - startTime) / duration, 1)
-      
-      // Easing cubic-out pour un effet plus naturel
+
       const eased = 1 - Math.pow(1 - progress, 3)
-      
+
       const newData = [
         startData[0] + (riskData[0] - startData[0]) * eased,
         startData[1] + (riskData[1] - startData[1]) * eased
       ]
-      
+
       setAnimatedData(newData)
-      
+
       if (progress < 1) {
         requestAnimationFrame(animate)
       }
     }
-    
+
     requestAnimationFrame(animate)
   }, [riskData])
 
-  // Création du graphique
   useEffect(() => {
     const Chart = window.Chart
     if (!Chart || !canvasRef.current) {
@@ -46,12 +43,11 @@ function RiskDistributionChart({ riskData, riskFilter, onRiskFilterChange }) {
     }
 
     const ctx = canvasRef.current.getContext('2d')
-    
-    // Créer un dégradé pour plus d'effet
+
     const gradient1 = ctx.createLinearGradient(0, 0, 0, 400)
     gradient1.addColorStop(0, '#22C55E')
     gradient1.addColorStop(1, '#16A34A')
-    
+
     const gradient2 = ctx.createLinearGradient(0, 0, 0, 400)
     gradient2.addColorStop(0, '#EF4444')
     gradient2.addColorStop(1, '#DC2626')
@@ -59,7 +55,7 @@ function RiskDistributionChart({ riskData, riskFilter, onRiskFilterChange }) {
     chartRef.current = new Chart(ctx, {
       type: 'doughnut',
       data: {
-        labels: ['Risque faible', 'Risque élevé'],
+        labels: ['Low risk', 'High risk'],
         datasets: [
           {
             data: animatedData,
@@ -98,12 +94,12 @@ function RiskDistributionChart({ riskData, riskFilter, onRiskFilterChange }) {
             callbacks: {
               label: (context) => {
                 const value = context.raw.toFixed(1)
-                return `${value}% des demandes`
+                return `${value}% of applications`
               },
               afterLabel: (context) => {
                 const total = riskData[0] + riskData[1]
                 const percentage = ((context.raw / total) * 100).toFixed(1)
-                return `Taux: ${percentage}%`
+                return `Rate: ${percentage}%`
               }
             }
           }
@@ -130,7 +126,7 @@ function RiskDistributionChart({ riskData, riskFilter, onRiskFilterChange }) {
         chartRef.current = null
       }
     }
-  }, [animatedData, onRiskFilterChange])
+  }, [animatedData, onRiskFilterChange, riskData])
 
   const handleFilterChange = useCallback((filter) => {
     onRiskFilterChange(filter)
@@ -142,15 +138,14 @@ function RiskDistributionChart({ riskData, riskFilter, onRiskFilterChange }) {
       transition-all duration-500 hover:border-purple-600/30
       animate-fade-in-up
     `}>
-      {/* En-tête */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-purple-600/10 flex items-center justify-center">
             <i className="fas fa-chart-pie text-purple-400" />
           </div>
           <div>
-            <h3 className="font-semibold text-white">Distribution des risques</h3>
-            <p className="text-xs text-gray-500 mt-0.5">Analyse des demandes</p>
+            <h3 className="font-semibold text-white">Risk distribution</h3>
+            <p className="text-xs text-gray-500 mt-0.5">Application analysis</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -160,22 +155,19 @@ function RiskDistributionChart({ riskData, riskFilter, onRiskFilterChange }) {
         </div>
       </div>
 
-      {/* Graphique */}
       <div className="relative h-64 mb-6">
         <canvas ref={canvasRef} className="w-full h-full" />
-        
-        {/* Centre du doughnut avec statistiques */}
+
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="text-center">
             <div className="text-3xl font-bold text-white">
               {riskData[0] + riskData[1]}
             </div>
-            <div className="text-xs text-gray-500 mt-1">Total demandes</div>
+            <div className="text-xs text-gray-500 mt-1">Total applications</div>
           </div>
         </div>
       </div>
 
-      {/* Légendes interactives */}
       <div className="grid grid-cols-2 gap-3 mb-4">
         <button
           type="button"
@@ -184,17 +176,16 @@ function RiskDistributionChart({ riskData, riskFilter, onRiskFilterChange }) {
             relative overflow-hidden group
             bg-[#1A1A24] rounded-xl border p-4
             transition-all duration-300
-            ${riskFilter === 'good' 
-              ? 'border-green-600/50 bg-green-600/5' 
+            ${riskFilter === 'good'
+              ? 'border-green-600/50 bg-green-600/5'
               : 'border-[#2A2A35] hover:border-green-600/30 hover:bg-green-600/5'
             }
           `}
         >
-          {/* Indicateur de sélection */}
           {riskFilter === 'good' && (
             <div className="absolute inset-0 bg-green-600/5 animate-pulse" />
           )}
-          
+
           <div className="relative flex items-center gap-3">
             <div className={`
               w-3 h-3 rounded-full bg-green-500
@@ -204,10 +195,10 @@ function RiskDistributionChart({ riskData, riskFilter, onRiskFilterChange }) {
             `} />
             <div className="flex-1 text-left">
               <div className="text-sm font-medium text-white">
-                Risque faible
+                Low risk
               </div>
               <div className="flex items-center justify-between mt-1">
-                <span className="text-xs text-gray-500">Demandes</span>
+                <span className="text-xs text-gray-500">Applications</span>
                 <span className="text-sm font-bold text-green-400">
                   {riskData[0].toFixed(1)}%
                 </span>
@@ -215,9 +206,8 @@ function RiskDistributionChart({ riskData, riskFilter, onRiskFilterChange }) {
             </div>
           </div>
 
-          {/* Barre de progression */}
           <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#2A2A35]">
-            <div 
+            <div
               className="h-full bg-green-500 transition-all duration-500"
               style={{ width: `${riskData[0]}%` }}
             />
@@ -231,17 +221,16 @@ function RiskDistributionChart({ riskData, riskFilter, onRiskFilterChange }) {
             relative overflow-hidden group
             bg-[#1A1A24] rounded-xl border p-4
             transition-all duration-300
-            ${riskFilter === 'bad' 
-              ? 'border-red-600/50 bg-red-600/5' 
+            ${riskFilter === 'bad'
+              ? 'border-red-600/50 bg-red-600/5'
               : 'border-[#2A2A35] hover:border-red-600/30 hover:bg-red-600/5'
             }
           `}
         >
-          {/* Indicateur de sélection */}
           {riskFilter === 'bad' && (
             <div className="absolute inset-0 bg-red-600/5 animate-pulse" />
           )}
-          
+
           <div className="relative flex items-center gap-3">
             <div className={`
               w-3 h-3 rounded-full bg-red-500
@@ -251,10 +240,10 @@ function RiskDistributionChart({ riskData, riskFilter, onRiskFilterChange }) {
             `} />
             <div className="flex-1 text-left">
               <div className="text-sm font-medium text-white">
-                Risque élevé
+                High risk
               </div>
               <div className="flex items-center justify-between mt-1">
-                <span className="text-xs text-gray-500">Demandes</span>
+                <span className="text-xs text-gray-500">Applications</span>
                 <span className="text-sm font-bold text-red-400">
                   {riskData[1].toFixed(1)}%
                 </span>
@@ -262,9 +251,8 @@ function RiskDistributionChart({ riskData, riskFilter, onRiskFilterChange }) {
             </div>
           </div>
 
-          {/* Barre de progression */}
           <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#2A2A35]">
-            <div 
+            <div
               className="h-full bg-red-500 transition-all duration-500"
               style={{ width: `${riskData[1]}%` }}
             />
@@ -272,7 +260,6 @@ function RiskDistributionChart({ riskData, riskFilter, onRiskFilterChange }) {
         </button>
       </div>
 
-      {/* Bouton "Tous" */}
       <button
         type="button"
         onClick={() => handleFilterChange('all')}
@@ -286,7 +273,7 @@ function RiskDistributionChart({ riskData, riskFilter, onRiskFilterChange }) {
         `}
       >
         <i className={`fas fa-eye text-xs ${riskFilter === 'all' ? 'text-white' : 'text-gray-500'}`} />
-        Voir toutes les demandes
+        View all applications
       </button>
     </div>
   )

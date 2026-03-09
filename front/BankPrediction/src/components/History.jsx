@@ -172,7 +172,7 @@ function History() {
           <div>
             <h2 className="text-xl font-bold sm:text-2xl">Prediction history</h2>
             <p className="mt-1 text-gray-400">
-              {filteredPredictions.length} result{filteredPredictions.length !== 1 ? 's' : ''} filtered{filteredPredictions.length !== 1 ? 's' : ''}
+              {filteredPredictions.length} filtered result{filteredPredictions.length !== 1 ? 's' : ''}
               {' / '}
               {predictions.length} total
             </p>
@@ -221,7 +221,7 @@ function History() {
             onChange={(event) => setRiskFilter(event.target.value)}
             className="modern-select rounded-xl px-4 py-3 text-sm"
           >
-            <option value="all">Tous les results</option>
+            <option value="all">All results</option>
             <option value="good">Low risk</option>
             <option value="bad">High risk</option>
           </select>
@@ -276,8 +276,8 @@ function History() {
       {filteredPredictions.length === 0 ? (
         <div className="glass-card rounded-2xl p-8 text-center sm:p-12">
           <i className="fas fa-inbox mb-4 text-4xl text-gray-600" />
-          <p className="text-gray-400">Aucun result pour ces filtereds</p>
-          <p className="mt-2 text-sm text-gray-500">Change les filtereds ou lance de nouvelles predictions.</p>
+          <p className="text-gray-400">No results for these filters</p>
+          <p className="mt-2 text-sm text-gray-500">Change filters or run new predictions.</p>
         </div>
       ) : (
         <div className="glass-card overflow-hidden rounded-2xl">
@@ -330,7 +330,7 @@ function History() {
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400">ID</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400">Date</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400">Age</th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400">Montant</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400">Amount</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400">Duration</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400">Result</th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-400">Confidence</th>

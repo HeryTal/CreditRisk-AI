@@ -46,7 +46,7 @@ function AmountDistributionChart({ amountValue }) {
           labels: AMOUNT_LABELS,
           datasets: [
             {
-              label: 'Nombre de crédits',
+              label: 'Number of credits',
               data: data,
               backgroundColor: '#8b5cf6',
               borderRadius: 4,
@@ -83,7 +83,7 @@ function AmountDistributionChart({ amountValue }) {
     <div className="glass-card rounded-2xl p-6">
       <h3 className="mb-4 flex items-center text-lg font-semibold">
         <i className="fas fa-chart-bar mr-2 text-blue-500" />
-        Distribution des montants
+        Amount distribution
       </h3>
       <div className="chart-container">
         <canvas ref={canvasRef} />
