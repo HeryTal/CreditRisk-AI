@@ -219,7 +219,7 @@ function History() {
           <select
             value={riskFilter}
             onChange={(event) => setRiskFilter(event.target.value)}
-            className="modern-select rounded-xl px-4 py-3 text-sm"
+            className="modern-select rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 bg-black"
           >
             <option value="all">All results</option>
             <option value="good">Low risk</option>
@@ -229,7 +229,7 @@ function History() {
           <select
             value={periodFilter}
             onChange={(event) => setPeriodFilter(event.target.value)}
-            className="modern-select rounded-xl px-4 py-3 text-sm"
+            className="modern-select rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 bg-black"
           >
             <option value="all">All periods</option>
             <option value="7d">Last 7 days</option>
