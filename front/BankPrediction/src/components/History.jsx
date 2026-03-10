@@ -213,7 +213,7 @@ function History() {
             value={searchText}
             onChange={(event) => setSearchText(event.target.value)}
             placeholder="Search (ID, age, amount, date...)"
-            className="modern-input rounded-xl px-4 py-3 text-sm"
+            className="modern-input rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 bg-black"
           />
 
           <select
